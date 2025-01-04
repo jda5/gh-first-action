@@ -1,39 +1,69 @@
-# This is the name of the workflow, visible in the GitHub Actions UI.
-name: Run Tests
+# Name of the workflow as it will appear in the GitHub Actions UI.
+name: Deploy Project
 
-# Specifies when the workflow should run.
-# 'push' means the workflow will trigger every time code is pushed to the repository.
+# Specifies the event that triggers the workflow.
+# 'push' triggers the workflow on every code push to the repository.
 on: push
 
-# Jobs define the tasks to execute in the workflow.
+# Jobs define the individual tasks the workflow will perform.
 jobs:
-    # This is the ID of the job. It can be any descriptive name.
-    test:
-        # Specifies the type of virtual machine (runner) to use.
-        # 'ubuntu-latest' indicates the workflow will run on the latest Ubuntu version.
-        runs-on: ubuntu-latest
+  # First job: Running tests to ensure the code works as expected.
+  test:
+    # The virtual machine environment for this job. Using the latest version of Ubuntu.
+    runs-on: ubuntu-latest
 
-        # Steps define the actions or commands to execute within the job.
-        steps:
-            # This step fetches the repository code.
-            # 'uses: actions/checkout@v3' is a prebuilt GitHub Action for checking out the repository code into the runner.
-            - name: Get Code
-              uses: actions/checkout@v3
-            
-            # This step installs Node.js, a JavaScript runtime needed for running JavaScript code.
-            # 'uses: actions/setup-node@v3' is a prebuilt GitHub Action for setting up Node.js.
-            # 'with' specifies the version of Node.js to install (in this case, version 18).
-            - name: Install NodeJS
-              uses: actions/setup-node@v3
-              with:
-                node-version: 18
-            
-            # This step installs the dependencies for your project.
-            # 'npm ci' installs dependencies defined in the package-lock.json file to ensure consistency.
-            - name: Install Dependencies
-              run: npm ci 
-              
-            # This step runs the tests in your project.
-            # 'npm test' executes the testing scripts defined in your project's package.json file.
-            - name: Run Tests
-              run: npm test
+    # Steps are the individual commands or actions to run within this job.
+    steps:
+      # Step 1: Check out the repository code into the runner.
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      # Step 2: Set up Node.js environment for the project.
+      # Specify the version of Node.js to use (in this case, v18).
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      # Step 3: Install project dependencies.
+      # 'npm ci' ensures a clean and consistent installation using package-lock.json.
+      - name: Install Dependencies
+        run: npm ci 
+        
+      # Step 4: Run the project's test suite.
+      # Executes the 'test' script defined in package.json.
+      - name: Run Tests
+        run: npm test
+
+  # Second job: Build and deploy the project.
+  deploy:
+    # The virtual machine environment for this job. Also using Ubuntu.
+    runs-on: ubuntu-latest
+
+    # Steps for the deployment job.
+    steps:
+      # Step 1: Check out the repository code into the runner.
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      # Step 2: Set up Node.js environment for the project.
+      # Again, specify the version of Node.js to use.
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      # Step 3: Install project dependencies.
+      # Ensures all required packages are installed for the build process.
+      - name: Install Dependencies
+        run: npm ci 
+      
+      # Step 4: Build the project.
+      # Executes the 'build' script defined in package.json to prepare the project for deployment.
+      - name: Build Project
+        run: npm run build
+      
+      # Step 5: Deploy the project.
+      # Replace the echo command with the actual deployment commands (e.g., deploying to a server or service).
+      - name: Deploy
+        run: echo "Deploying..."
