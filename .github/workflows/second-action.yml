@@ -1,19 +1,39 @@
+# This is the name of the workflow, visible in the GitHub Actions UI.
 name: Run Tests
+
+# Specifies when the workflow should run.
+# 'push' means the workflow will trigger every time code is pushed to the repository.
 on: push
+
+# Jobs define the tasks to execute in the workflow.
 jobs:
+    # This is the ID of the job. It can be any descriptive name.
     test:
+        # Specifies the type of virtual machine (runner) to use.
+        # 'ubuntu-latest' indicates the workflow will run on the latest Ubuntu version.
         runs-on: ubuntu-latest
+
+        # Steps define the actions or commands to execute within the job.
         steps:
+            # This step fetches the repository code.
+            # 'uses: actions/checkout@v3' is a prebuilt GitHub Action for checking out the repository code into the runner.
             - name: Get Code
               uses: actions/checkout@v3
             
+            # This step installs Node.js, a JavaScript runtime needed for running JavaScript code.
+            # 'uses: actions/setup-node@v3' is a prebuilt GitHub Action for setting up Node.js.
+            # 'with' specifies the version of Node.js to install (in this case, version 18).
             - name: Install NodeJS
               uses: actions/setup-node@v3
               with:
                 node-version: 18
             
+            # This step installs the dependencies for your project.
+            # 'npm ci' installs dependencies defined in the package-lock.json file to ensure consistency.
             - name: Install Dependencies
               run: npm ci 
               
+            # This step runs the tests in your project.
+            # 'npm test' executes the testing scripts defined in your project's package.json file.
             - name: Run Tests
               run: npm test
