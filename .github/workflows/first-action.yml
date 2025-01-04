@@ -1,0 +1,26 @@
+# This is the name of the workflow. It will be displayed in the GitHub Actions UI.
+name: First Workflow
+
+# This specifies when the workflow should run. 
+# 'workflow_dispatch' allows you to manually trigger the workflow from GitHub's UI.
+on: workflow_dispatch
+
+# Jobs define the tasks that the workflow will perform.
+jobs:
+  # This is the ID of the job. You can name it anything meaningful.
+  first-job:
+    # Specifies the type of virtual machine (runner) to use. 
+    # 'ubuntu-latest' means it will run on the latest version of Ubuntu.
+    runs-on: ubuntu-latest
+
+    # Steps are the individual actions or commands that make up the job.
+    steps:
+      # This step gives a friendly greeting.
+      # The 'name' is just a label for this step, and 'run' executes a shell command.
+      - name: Print Greeting
+        run: echo "Hello World!"
+
+      # This step prints a goodbye message.
+      # Again, the 'name' is a label, and 'run' executes the command.
+      - name: Print Goodbye
+        run: echo "Done - bye!"
