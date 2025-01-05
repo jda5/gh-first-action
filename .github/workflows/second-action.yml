@@ -1,9 +1,10 @@
 # Name of the workflow as it will appear in the GitHub Actions UI.
 name: Deploy Project
 
-# Specifies the event that triggers the workflow.
-# 'push' triggers the workflow on every code push to the repository.
-on: push
+# Specifies the events that trigger the workflow.
+# 'push' runs the workflow whenever new code is pushed to the repository.
+# 'workflow_dispatch' allows you to manually trigger the workflow from the GitHub Actions UI.
+on: [push, workflow_dispatch]
 
 # Jobs define the individual tasks the workflow will perform.
 jobs:
