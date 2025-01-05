@@ -15,55 +15,61 @@ jobs:
     # Steps are the individual commands or actions to run within this job.
     steps:
       # Step 1: Check out the repository code into the runner.
+      # This fetches the latest version of the repository to the virtual machine.
       - name: Checkout Code
         uses: actions/checkout@v3
       
       # Step 2: Set up Node.js environment for the project.
-      # Specify the version of Node.js to use (in this case, v18).
+      # 'uses: actions/setup-node@v3' installs Node.js (version 18 in this case).
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
       
       # Step 3: Install project dependencies.
-      # 'npm ci' ensures a clean and consistent installation using package-lock.json.
+      # 'npm ci' ensures a clean, consistent install using the package-lock.json file.
       - name: Install Dependencies
         run: npm ci 
         
       # Step 4: Run the project's test suite.
-      # Executes the 'test' script defined in package.json.
+      # Executes the 'test' script defined in the project's package.json.
       - name: Run Tests
         run: npm test
 
   # Second job: Build and deploy the project.
   deploy:
+    # Define dependencies between jobs. The 'deploy' job depends on the 'test' job.
+    # This ensures the 'deploy' job only runs if the 'test' job is successful.
+    needs: test
+
     # The virtual machine environment for this job. Also using Ubuntu.
     runs-on: ubuntu-latest
 
     # Steps for the deployment job.
     steps:
       # Step 1: Check out the repository code into the runner.
+      # Re-fetches the repository in case changes were made during the 'test' job.
       - name: Checkout Code
         uses: actions/checkout@v3
       
       # Step 2: Set up Node.js environment for the project.
-      # Again, specify the version of Node.js to use.
+      # Reinstalls Node.js (version 18) to ensure the environment is consistent.
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
       
       # Step 3: Install project dependencies.
-      # Ensures all required packages are installed for the build process.
+      # Installs dependencies required for the build and deployment process.
       - name: Install Dependencies
         run: npm ci 
       
       # Step 4: Build the project.
-      # Executes the 'build' script defined in package.json to prepare the project for deployment.
+      # Executes the 'build' script from package.json to prepare files for deployment.
       - name: Build Project
         run: npm run build
       
       # Step 5: Deploy the project.
-      # Replace the echo command with the actual deployment commands (e.g., deploying to a server or service).
+      # Replace the echo statement with the actual deployment commands (e.g., uploading files to a server).
       - name: Deploy
         run: echo "Deploying..."
