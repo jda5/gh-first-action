@@ -1,0 +1,23 @@
+# Name of the workflow as it will appear in the GitHub Actions UI.
+name: Output Information
+
+# Specifies the event that triggers the workflow.
+# 'workflow_dispatch' allows you to manually trigger the workflow from GitHub's UI.
+on: workflow_dispatch
+
+# Jobs define the tasks that the workflow will perform.
+jobs:
+    # This job is named 'info'. You can give it any meaningful name.
+    info: 
+      # Specifies the virtual machine (runner) to use for this job.
+      # 'ubuntu-latest' sets up the latest Ubuntu environment.
+      runs-on: ubuntu-latest
+
+      # Steps are the individual actions or commands that make up the job.
+      steps:
+        # Step 1: Output the GitHub context information.
+        # 'github' is a built-in context object that provides details about the workflow run.
+        # 'toJson(github)' converts the 'github' object into a JSON string.
+        # 'echo' prints the JSON string to the console output for inspection.
+        - name: Output GitHub Context
+          run: echo "${{ toJson(github) }}"
