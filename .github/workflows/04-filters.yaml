@@ -1,0 +1,44 @@
+# Name of the workflow as it will appear in the GitHub Actions UI.
+name: Event Demo
+
+# Specifies the events that trigger the workflow.
+on:
+    # Trigger the workflow when a pull request is created or closed on the repository.
+    pull_request:
+        # Specify the types of pull request events to listen for.
+        types: 
+            - opened  # Trigger when a pull request is opened.
+            - closed  # Trigger when a pull request is closed.
+        # Only trigger the workflow if the pull request targets the 'main' branch.
+        branches:
+            - main
+
+    # Allows the workflow to be triggered manually from the GitHub Actions UI.
+    workflow_dispatch:
+
+    # Trigger the workflow when a push event occurs.
+    push:
+        # Define the branches that this workflow should respond to.
+        branches:
+            - main       # Trigger on pushes to the 'main' branch.
+            - 'dev-*'    # Trigger on pushes to any branch that starts with 'dev-'.
+            - 'feat/**'  # Trigger on pushes to any branch inside the 'feat/' directory structure.
+        # Exclude specific file paths from triggering the workflow.
+        paths-ignore:
+            - '.github/workflows/*'  # Ignore changes to workflow files themselves.
+
+# Jobs define the individual tasks the workflow will perform.
+jobs:
+    # This job is named 'ping'. You can name it anything meaningful.
+    ping:
+        # Specifies the virtual machine (runner) to use for this job.
+        # 'ubuntu-latest' sets up the latest Ubuntu environment.
+        runs-on: ubuntu-latest
+
+        # Steps are the individual actions or commands that make up the job.
+        steps:
+            # Step 1: Print a simple message to the console.
+            # 'name' is the label for this step.
+            # 'run' executes the shell command to print "Ping" to the console.
+            - name: Ping
+              run: echo "Ping"
