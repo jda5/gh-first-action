@@ -1,0 +1,116 @@
+name: Conditional Job Execution
+
+# Trigger the workflow when code is pushed to the 'main' branch.
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Linting job to ensure code quality.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        id: cache  # Assigns an ID to this step so its outputs can be referenced later.
+        uses: actions/cache@v3
+        with:
+          path: node_modules  # Cache the 'node_modules' directory to speed up future runs.
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}  # Unique key for the cache based on the package-lock.json hash.
+
+      # Only install dependencies if the cache was not hit.
+      # The 'if' key allows you to set conditions for whether this step runs.
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'  # Runs only if the cache was not found.
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+  # Testing job to ensure code functionality.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      # Install dependencies only if the cache was not hit.
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Test code
+        id: run-tests  # ID assigned to reference the outcome of this step later.
+        run: npm run test
+
+      # Upload the test report only if the tests fail.
+      # The 'failure()' function evaluates to true if any previous step in the job fails.
+      - name: Upload test report
+        if: failure() && steps.run-tests.outcome == 'failure'  # Ensures this step runs only on failure.
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report  # Name of the artifact to upload.
+          path: test.json  # File to upload.
+
+  # Build job to prepare the website for deployment.
+  build:
+    needs: test  # Runs only if the 'test' job is successful.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build website
+        id: build-website  # ID to reference the outcome of this step.
+        run: npm run build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-files  # Name of the artifact.
+          path: dist  # Directory to upload as the artifact.
+
+  # Deployment job to deploy the built website.
+  deploy:
+    needs: build  # Runs only if the 'build' job is successful.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files
+
+      - name: Output contents
+        run: ls
+
+      - name: Deploy
+        run: echo "Deploying..."  # Replace this with actual deployment commands.
+
+  # Reporting job to run only if any previous jobs fail.
+  report:
+    needs: [lint, deploy]  # Depends on both 'lint' and 'deploy' jobs.
+    if: failure()  # Conditional check to run this job only if a previous job failed.
+    runs-on: ubuntu-latest  # Fixed a typo: changed 'ububtu-latest' to 'ubuntu-latest'.
+    steps:
+      - name: Show Report
+        run: |
+          echo "Something went wrong!"  # Informative message for debugging.
+          echo "${{ toJson(github) }}"  # Outputs the GitHub context in JSON format for debugging.
