@@ -1,0 +1,67 @@
+name: Reusable Deploy
+
+# This workflow is triggered when it is called by another workflow.
+# The 'workflow_call' event is used to define reusable workflows.
+on: 
+  workflow_call:  # Defines this workflow as reusable, callable from other workflows.
+    inputs:
+      # Define an input for this reusable workflow to accept from the caller.
+      artifact:
+        description: 'Artifact name to download'  # A description for the input.
+        required: true  # Mark the input as required for the caller to provide it.
+        default: dist  # Default value if the caller doesn't provide one.
+        type: string  # The type of the input (in this case, a string representing the artifact name).
+    
+    # Optionally, you can define secrets that the caller might need to provide.
+    # secrets:
+    #   some-secret: 
+    #     required: false  # The secret is not required in this case.
+
+    # Define outputs that this reusable workflow will return to the caller.
+    outputs:
+      result:
+        description: 'The result of the deployment'  # Description of the output.
+        value: ${{ jobs.deploy.outputs.outcome }}  # The actual value returned is the outcome of the 'deploy' job.
+
+jobs:
+  # The 'deploy' job handles the actual deployment process.
+  deploy:
+    # This job outputs the result of the deployment, which will be used in other jobs or returned.
+    outputs:
+      outcome: ${{ steps.set-result.outputs.set-result }}  # The 'outcome' will be set based on the result of 'set-result' step.
+    
+    # Specifies the environment for running the job (in this case, Ubuntu).
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download the artifact specified by the caller input.
+      # The 'name' parameter refers to the artifact to download, which is provided as an input when the workflow is called.
+      - name: Get Code
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact }}  # Download the artifact provided by the caller.
+
+      # Step 2: List files in the current directory for verification or debugging.
+      - name: List Files
+        run: ls
+
+      # Step 3: Output information about the deployment process.
+      - name: Output Information
+        run: echo "Deploying & Uploading..."
+
+      # Step 4: Set a deployment result output to indicate whether the deployment was successful.
+      # The result is saved in an environment variable, and later referenced as the outcome of the deploy job.
+      - name: Set Result Output
+        id: set-result
+        run: echo "step-result=success" >> $GITHUB_ENV  # Mark the result as success.
+
+  # The 'print-job-output' job will run after the 'deploy' job completes and prints the result of the deployment.
+  print-job-output:
+    runs-on: ubuntu-latest
+    # Ensure that 'print-job-output' depends on the successful completion of the 'deploy' job.
+    needs: deploy  # This job depends on the 'deploy' job and will only run if 'deploy' succeeds.
+
+    steps:
+      # Step 1: Print the outcome of the 'deploy' job (success or failure).
+      - name: Print Job Output
+        run: echo "${{ needs.deploy.outputs.outcome }}"  # Print the 'outcome' from the 'deploy' job.
