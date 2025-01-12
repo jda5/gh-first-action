@@ -1,0 +1,52 @@
+name: Matrix Demo
+
+# Trigger the workflow on every push to the repository.
+on: push
+
+jobs:
+    # Define a job named 'build' to demonstrate matrix builds.
+    build:
+        # Allow the job to continue running even if some matrix configurations fail.
+        continue-on-error: true
+
+        # Define a matrix strategy for running the job with different configurations.
+        strategy:
+            matrix:
+                # Specify Node.js versions to test against.
+                node-version: [12, 14, 16]
+
+                # Specify operating systems to run the job on.
+                operating-system: [ubuntu-latest, windows-latest]
+
+                # Additional configurations to explicitly include in the matrix.
+                include:
+                    - node-version: 18  # Add Node.js version 18 explicitly.
+                      operating-system: ubuntu-latest  # Run this specific combination.
+
+                # Configurations to explicitly exclude from the matrix.
+                exclude:
+                    - node-version: 12  # Exclude Node.js version 12 on Windows.
+                      operating-system: windows-latest
+
+        # Dynamically assign the runner based on the current matrix configuration.
+        runs-on: ${{ matrix.operating-system }}
+
+        steps:
+            # Step 1: Check out the repository code.
+            - name: Get Code
+              uses: actions/checkout@v3
+
+            # Step 2: Install the Node.js version defined in the matrix.
+            - name: Install NodeJS
+              uses: actions/setup-node@v2
+              with:
+                # Dynamically use the Node.js version from the matrix.
+                node-version: ${{ matrix.node-version }}
+
+            # Step 3: Install project dependencies.
+            - name: Install dependencies
+              run: npm ci
+
+            # Step 4: Build the project.
+            - name: Build Project
+              run: npm run build
